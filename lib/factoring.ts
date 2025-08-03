@@ -144,7 +144,7 @@ function detectPerfectPower(expression: string): { isPerfectPower: boolean; base
       // Extract coefficients and powers
       const termData: Array<{coef: number, power: number}> = [];
       
-      terms.forEach(term => {
+      terms.forEach((term: string) => {
         const coefMatch = term.match(/^([+-]?\d*)\*?/);
         const powerMatch = term.match(/x\^(\d+)/);
         
@@ -198,7 +198,7 @@ function detectSubstitutionPattern(expression: string): {
     
     if (exponentMatches.length > 0) {
       const exponents: number[] = [];
-      exponentMatches.forEach(match => {
+      exponentMatches.forEach((match: string) => {
         const exp = match.match(/\^(\d+)/)?.[1];
         if (exp) exponents.push(parseInt(exp));
       });
@@ -367,7 +367,7 @@ export function factorWithSteps(expression: string): FactoringResult {
         stepNumber: stepNumber++,
         description: 'Recognize substitution pattern',
         expression: `Let ${substitutionPattern.variable} = ${substitutionPattern.substitution}`,
-        explanation: `All exponents are multiples of ${substitutionPattern.substitution.match(/\^(\d+)/)?.[1]}, so we can substitute`,
+        explanation: `All exponents are multiples of ${substitutionPattern.substitution?.match(/\^(\d+)/)?.[1]}, so we can substitute`,
         technique: 'other',
         tip: '🔄 Substitution makes complex polynomials simpler!'
       });

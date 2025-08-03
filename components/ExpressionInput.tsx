@@ -39,7 +39,7 @@ export default function ExpressionInput({
       onKeyPress={handleKeyPress}
       onBlur={handleBlur}
       placeholder={placeholder}
-      className="w-full px-4 py-3 text-lg border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:outline-none focus:border-blue-500 dark:focus:border-blue-400 transition-colors"
+      className="w-full px-4 py-3 text-lg border-2 border-gray-300 bg-white text-gray-900 rounded-lg focus:outline-none focus:border-blue-500 transition-colors"
       autoFocus
     />
   );

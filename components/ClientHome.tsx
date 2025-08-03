@@ -39,7 +39,7 @@ export default function ClientHome() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors">
+    <div className="min-h-screen bg-gray-50 transition-colors">
       <DarkModeToggle isDark={isDark} onToggle={toggleDarkMode} />
       
       <div className="max-w-4xl mx-auto px-4 py-12">
@@ -48,19 +48,19 @@ export default function ClientHome() {
             <div className="mr-4">
               <CalculatorLogo size={56} />
             </div>
-            <h1 className="text-4xl font-bold text-gray-800 dark:text-gray-100">
+            <h1 className="text-4xl font-bold text-gray-800">
               Algebraic Factoring Calculator
             </h1>
           </div>
-          <p className="text-lg text-gray-600 dark:text-gray-400 mb-2">
+          <p className="text-lg text-gray-600 mb-2">
             Factor any polynomial instantly - Your homework helper! 
           </p>
-          <p className="text-sm text-gray-500 dark:text-gray-500">
+          <p className="text-sm text-gray-500">
             Perfect for algebra students, teachers, and math enthusiasts
           </p>
         </header>
 
-        <main className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8">
+        <main className="bg-white rounded-xl shadow-lg p-8">
           <div className="space-y-4">
             <ExpressionInput
               value={expression}
@@ -87,7 +87,7 @@ export default function ClientHome() {
 
         <EducationalContent />
 
-        <footer className="mt-12 text-center text-sm text-gray-500 dark:text-gray-400 space-y-2">
+        <footer className="mt-12 text-center text-sm text-gray-500 space-y-2">
           <p>Powered by Algebrite - Computer Algebra System</p>
           <p>© {new Date().getFullYear()} Celestial Platform, LLC. All rights reserved.</p>
         </footer>
