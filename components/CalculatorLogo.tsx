@@ -44,7 +44,7 @@ export default function CalculatorLogo({ size = 64 }: { size?: number }) {
       </text>
       
       {/* Button grid */}
-      {[0, 1, 2, 3].map((row) => (
+      {[0, 1, 2, 3].flatMap((row) =>
         [0, 1, 2, 3].map((col) => (
           <rect
             key={`${row}-${col}`}
