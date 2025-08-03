@@ -135,7 +135,7 @@ export function factorWithSteps(expression: string): FactoringResult {
     // More robust pattern to catch all quadratics
     const hasSquareTerm = expanded.match(/[a-z]\s*\^\s*2/);
     const hasLinearTerm = expanded.match(/[+-]\s*\d*\s*\*?\s*[a-z](?!\s*\^)/);
-    const hasConstantTerm = expanded.match(/[+-]\s*\d+(?!\s*\*)/);
+    const hasConstantTerm = expanded.match(/[+-]\s*\d+(?!\s*\*?\s*[a-z])/);
     
     if (hasSquareTerm && (hasLinearTerm || hasConstantTerm)) {
       // This is a quadratic expression
