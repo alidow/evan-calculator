@@ -11,6 +11,7 @@ import EducationalContent from '@/components/EducationalContent';
 import CalculatorLogo from '@/components/CalculatorLogo';
 import { factorExpression, FactoringResult } from '@/lib/factoring';
 import { useDarkMode } from '@/hooks/useDarkMode';
+import { trackFactoring, trackExampleClick } from '@/lib/analytics';
 
 export default function ClientHome() {
   const [expression, setExpression] = useState('');
@@ -24,6 +25,9 @@ export default function ClientHome() {
     const factoringResult = factorExpression(expression);
     setResult(factoringResult);
 
+    // Track analytics
+    trackFactoring(expression, !factoringResult.error && factoringResult.isFactorable);
+
     if (!factoringResult.error) {
       setHistory(prev => [factoringResult, ...prev.slice(0, 9)]);
     }
@@ -32,6 +36,9 @@ export default function ClientHome() {
   const handleSelectExample = (exampleExpression: string) => {
     setExpression(exampleExpression);
     setResult(null);
+    
+    // Track analytics
+    trackExampleClick(exampleExpression);
   };
 
   const handleClearHistory = () => {
