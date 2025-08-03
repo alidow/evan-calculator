@@ -20,6 +20,16 @@ export const metadata: Metadata = {
   authors: [{ name: "Evan Calculator" }],
   creator: "Evan Calculator",
   publisher: "Evan Calculator",
+  icons: {
+    icon: [
+      { url: '/favicon-16x16.png', sizes: '16x16', type: 'image/png' },
+      { url: '/favicon-32x32.png', sizes: '32x32', type: 'image/png' },
+      { url: '/favicon-48x48.png', sizes: '48x48', type: 'image/png' },
+    ],
+    apple: [
+      { url: '/apple-touch-icon.png', sizes: '256x256', type: 'image/png' }
+    ],
+  },
   openGraph: {
     title: "Free Algebraic Factoring Calculator - Factor Any Polynomial",
     description: "Instantly factor algebraic expressions, polynomials, and quadratic equations. Perfect for students and educators. Try our free online math tool now!",

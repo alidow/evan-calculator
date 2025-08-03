@@ -3,7 +3,7 @@ const fs = require('fs');
 const path = require('path');
 
 async function generateFavicon() {
-  const svgBuffer = fs.readFileSync(path.join(__dirname, '../public/calculator-icon.svg'));
+  const svgBuffer = fs.readFileSync(path.join(__dirname, '../public/favicon-simple.svg'));
   
   // Generate PNG versions
   const sizes = [16, 32, 48, 64, 128, 256];
