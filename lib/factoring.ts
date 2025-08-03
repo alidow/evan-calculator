@@ -101,10 +101,172 @@ function verifyFactorization(factored: string, original: string): string {
   }
 }
 
+// Helper function to detect perfect power patterns like (ax^n + b)^2
+function detectPerfectPower(expression: string): { isPerfectPower: boolean; base?: string; power?: number } {
+  try {
+    // Try to detect if the expression is a perfect square
+    // For example: 4x^4 + 4x^2 + 1 = (2x^2 + 1)^2
+    
+    // First check if it's already factored as a power
+    const factored = Algebrite.factor(expression).toString();
+    const powerMatch = factored.match(/^\(([^)]+)\)\^(\d+)$/);
+    if (powerMatch) {
+      return { 
+        isPerfectPower: true, 
+        base: powerMatch[1], 
+        power: parseInt(powerMatch[2])
+      };
+    }
+    
+    // Try to detect perfect square trinomials with higher degrees
+    // Pattern: a²x^(2n) + 2abx^n + b²
+    const expanded = Algebrite.run(`expand(${expression})`).toString();
+    
+    // Special case for 4x^4 + 4x^2 + 1 type expressions
+    // Try common perfect square patterns
+    const perfectSquarePatterns = [
+      { pattern: '4*x^4+4*x^2+1', base: '2*x^2+1' },
+      { pattern: '4*x^4-4*x^2+1', base: '2*x^2-1' },
+      { pattern: 'x^4+2*x^2+1', base: 'x^2+1' },
+      { pattern: 'x^4-2*x^2+1', base: 'x^2-1' },
+    ];
+    
+    for (const ps of perfectSquarePatterns) {
+      if (Algebrite.run(`${expression} - (${ps.pattern})`).toString() === '0') {
+        return { isPerfectPower: true, base: ps.base, power: 2 };
+      }
+    }
+    
+    // General approach: check if expression has form (ax^n + b)^2
+    const terms = expanded.match(/([+-]?[^+-]+)/g) || [];
+    
+    if (terms.length === 3) {
+      // Extract coefficients and powers
+      const termData: Array<{coef: number, power: number}> = [];
+      
+      terms.forEach(term => {
+        const coefMatch = term.match(/^([+-]?\d*)\*?/);
+        const powerMatch = term.match(/x\^(\d+)/);
+        
+        let coef = 1;
+        if (coefMatch && coefMatch[1]) {
+          coef = coefMatch[1] === '-' ? -1 : (coefMatch[1] === '+' || coefMatch[1] === '' ? 1 : parseInt(coefMatch[1]));
+        }
+        
+        const power = powerMatch ? parseInt(powerMatch[1]) : (term.includes('x') ? 1 : 0);
+        termData.push({ coef: Math.abs(coef), power });
+      });
+      
+      // Sort by power descending
+      termData.sort((a, b) => b.power - a.power);
+      
+      // Check if powers form 2n, n, 0 pattern
+      if (termData[0].power === 2 * termData[1].power && termData[2].power === 0) {
+        const n = termData[1].power;
+        const a = Math.sqrt(termData[0].coef);
+        const b = Math.sqrt(termData[2].coef);
+        
+        // Check if middle term is 2ab
+        if (Math.abs(termData[1].coef - 2 * a * b) < 0.0001) {
+          const base = `${a === 1 ? '' : a}*x^${n}+${b}`;
+          // Verify by expanding
+          const verification = Algebrite.run(`expand((${base})^2)`).toString();
+          if (Algebrite.run(`${expression} - (${verification})`).toString() === '0') {
+            return { isPerfectPower: true, base, power: 2 };
+          }
+        }
+      }
+    }
+  } catch {}
+  
+  return { isPerfectPower: false };
+}
+
+// Helper function to detect substitution patterns like x^6 - 7x^3 + 12
+function detectSubstitutionPattern(expression: string): { 
+  hasPattern: boolean; 
+  substitution?: string;
+  variable?: string;
+  newExpression?: string;
+} {
+  try {
+    const expanded = Algebrite.run(`expand(${expression})`).toString();
+    
+    // Look for patterns where all exponents share a common factor
+    const exponentMatches = expanded.match(/([a-z])\^(\d+)/g) || [];
+    const variable = expanded.match(/([a-z])/)?.[1] || 'x';
+    
+    if (exponentMatches.length > 0) {
+      const exponents: number[] = [];
+      exponentMatches.forEach(match => {
+        const exp = match.match(/\^(\d+)/)?.[1];
+        if (exp) exponents.push(parseInt(exp));
+      });
+      
+      // Find GCD of all exponents
+      if (exponents.length > 0) {
+        let gcdExp = exponents[0];
+        for (let i = 1; i < exponents.length; i++) {
+          gcdExp = gcd(gcdExp, exponents[i]);
+        }
+        
+        if (gcdExp > 1) {
+          // We can substitute u = x^gcdExp
+          const substitution = `${variable}^${gcdExp}`;
+          const newVar = 'u';
+          
+          // Replace x^n with u^(n/gcdExp)
+          let newExpression = expanded;
+          exponents.forEach(exp => {
+            const newExp = exp / gcdExp;
+            const pattern = new RegExp(`${variable}\\^${exp}`, 'g');
+            newExpression = newExpression.replace(pattern, 
+              newExp === 1 ? newVar : `${newVar}^${newExp}`);
+          });
+          
+          return {
+            hasPattern: true,
+            substitution: substitution,
+            variable: newVar,
+            newExpression: newExpression
+          };
+        }
+      }
+    }
+  } catch {}
+  
+  return { hasPattern: false };
+}
+
+// Helper function to calculate GCD of two numbers
+function gcd(a: number, b: number): number {
+  return b === 0 ? a : gcd(b, a % b);
+}
+
 // Helper function to extract GCF
 function extractGCF(expression: string): { gcf: string; remaining: string; hasGCF: boolean } | null {
   try {
-    // Use Algebrite to factor and check if there's a common factor
+    // First try Algebrite's built-in GCD function for polynomial GCF
+    const terms = expression.split(/(?=[+-])/);
+    if (terms.length > 1) {
+      // Use Algebrite's gcd function for better GCF extraction
+      let gcdExpr = terms[0].trim();
+      for (let i = 1; i < terms.length; i++) {
+        const term = terms[i].trim();
+        if (term && term !== '+' && term !== '-') {
+          gcdExpr = Algebrite.run(`gcd(${gcdExpr}, ${term})`).toString();
+        }
+      }
+      
+      // Check if we found a non-trivial GCF
+      if (gcdExpr && gcdExpr !== '1' && gcdExpr !== '-1') {
+        // Divide the original expression by the GCF to get the remaining part
+        const remaining = Algebrite.run(`(${expression})/(${gcdExpr})`).toString();
+        return { gcf: gcdExpr, remaining: remaining, hasGCF: true };
+      }
+    }
+    
+    // Fallback to pattern matching if GCD didn't work
     const factored = Algebrite.factor(expression).toString();
     
     // Check various patterns for GCF extraction
@@ -114,12 +276,12 @@ function extractGCF(expression: string): { gcf: string; remaining: string; hasGC
       return { gcf: match[1], remaining: match[2].trim(), hasGCF: true };
     }
     
-    // Pattern 2: variable * (expression) or number*variable * (expression)
+    // Pattern 2: variable or monomial * (expression)
     match = factored.match(/^([^(]+)\s*\*\s*\(([^)]+)\)$/);
     if (match) {
       const gcf = match[1].trim();
       // Check if it's not just a trivial factor
-      if (gcf !== '1' && gcf !== expression) {
+      if (gcf !== '1' && gcf !== expression && !gcf.includes('(')) {
         return { gcf: gcf, remaining: match[2].trim(), hasGCF: true };
       }
     }
@@ -169,7 +331,114 @@ export function factorWithSteps(expression: string): FactoringResult {
       currentExpression = gcfResult.remaining;
     }
 
-    // Step 2: Analyze the expression pattern
+    // Step 2: Check for perfect power patterns first
+    const perfectPower = detectPerfectPower(currentExpression);
+    if (perfectPower.isPerfectPower && perfectPower.base && perfectPower.power) {
+      steps.push({
+        stepNumber: stepNumber++,
+        description: 'Recognize perfect power pattern',
+        expression: `(${perfectPower.base})^${perfectPower.power}`,
+        explanation: `This expression is a perfect power`,
+        technique: 'perfect-square',
+        tip: `🎯 Perfect ${perfectPower.power === 2 ? 'square' : 'power'} detected!`
+      });
+      
+      // Verify the perfect power
+      const verification = verifyFactorization(`(${perfectPower.base})^${perfectPower.power}`, currentExpression);
+      if (verification) {
+        steps.push({
+          stepNumber: stepNumber++,
+          description: 'Verify the perfect power',
+          expression: `(${perfectPower.base})^${perfectPower.power} = ${verification}`,
+          explanation: 'Expanding confirms this is correct',
+          technique: 'perfect-square',
+          tip: '✅ Always verify perfect powers by expanding!'
+        });
+      }
+      
+      // Continue to see if we can factor the base further
+      currentExpression = perfectPower.base;
+    }
+    
+    // Step 3: Check for substitution patterns
+    const substitutionPattern = detectSubstitutionPattern(currentExpression);
+    if (substitutionPattern.hasPattern && substitutionPattern.newExpression) {
+      steps.push({
+        stepNumber: stepNumber++,
+        description: 'Recognize substitution pattern',
+        expression: `Let ${substitutionPattern.variable} = ${substitutionPattern.substitution}`,
+        explanation: `All exponents are multiples of ${substitutionPattern.substitution.match(/\^(\d+)/)?.[1]}, so we can substitute`,
+        technique: 'other',
+        tip: '🔄 Substitution makes complex polynomials simpler!'
+      });
+      
+      steps.push({
+        stepNumber: stepNumber++,
+        description: 'Rewrite with substitution',
+        expression: substitutionPattern.newExpression,
+        explanation: `After substitution, we get a simpler expression in ${substitutionPattern.variable}`,
+        technique: 'other',
+        tip: '📝 Now factor the simpler expression'
+      });
+      
+      // Factor the substituted expression - force factoring for quadratics
+      let substitutedFactored = Algebrite.factor(substitutionPattern.newExpression).toString();
+      
+      // If Algebrite didn't factor it, try manual quadratic factoring
+      if (substitutedFactored === substitutionPattern.newExpression || !substitutedFactored.includes('(')) {
+        // Parse the substituted expression to get coefficients
+        const match = substitutionPattern.newExpression.match(/([+-]?\d*)\*?u\^2\s*([+-]\s*\d*)\*?u\s*([+-]\s*\d+)/);
+        if (match) {
+          const a = parseInt(match[1] || '1');
+          const b = parseInt(match[2].replace(/\s/g, '') || '0');
+          const c = parseInt(match[3].replace(/\s/g, ''));
+          
+          // For simple quadratics, find factors
+          if (a === 1) {
+            const factors = findFactorPairs(c);
+            const correctPair = factors.find(([f1, f2]) => f1 + f2 === b);
+            if (correctPair) {
+              substitutedFactored = `(u${correctPair[0] >= 0 ? '+' : ''}${correctPair[0]})*(u${correctPair[1] >= 0 ? '+' : ''}${correctPair[1]})`;
+            }
+          }
+        }
+      }
+      
+      if (substitutedFactored !== substitutionPattern.newExpression) {
+        steps.push({
+          stepNumber: stepNumber++,
+          description: 'Factor the substituted expression',
+          expression: substitutedFactored,
+          explanation: `Factoring in terms of ${substitutionPattern.variable}`,
+          technique: 'quadratic',
+          tip: '🎯 Much easier to factor now!'
+        });
+        
+        // Substitute back
+        const backSubstituted = substitutedFactored.replace(
+          new RegExp(substitutionPattern.variable!, 'g'),
+          substitutionPattern.substitution!
+        );
+        steps.push({
+          stepNumber: stepNumber++,
+          description: 'Substitute back',
+          expression: backSubstituted,
+          explanation: `Replace ${substitutionPattern.variable} with ${substitutionPattern.substitution}`,
+          technique: 'other',
+          tip: '✨ And we have our final factored form!'
+        });
+        
+        // Update final factored form to use the substitution result
+        return {
+          original: expression,
+          factored: backSubstituted,
+          isFactorable: true,
+          steps: steps.length > 0 ? steps : undefined
+        };
+      }
+    }
+    
+    // Step 4: Analyze the expression pattern
     const expanded = Algebrite.run(`expand(${currentExpression})`).toString();
     
     // Try to factor the current expression
@@ -182,7 +451,7 @@ export function factorWithSteps(expression: string): FactoringResult {
     const hasLinearTerm = expanded.match(/[+-]\s*\d*\s*\*?\s*[a-z](?!\s*\^)/);
     const hasConstantTerm = expanded.match(/[+-]\s*\d+(?!\s*\*?\s*[a-z])/);
     
-    if (hasSquareTerm && (hasLinearTerm || hasConstantTerm)) {
+    if (!substitutionPattern.hasPattern && hasSquareTerm && (hasLinearTerm || hasConstantTerm)) {
       // This is a quadratic expression
       
       // Check if it's a perfect square

@@ -6,9 +6,15 @@ interface FactorButtonProps {
 }
 
 export default function FactorButton({ onClick, disabled = false }: FactorButtonProps) {
+  const handleMouseDown = (e: React.MouseEvent) => {
+    // Prevent the input from losing focus before the value is used
+    e.preventDefault();
+  };
+
   return (
     <button
       onClick={onClick}
+      onMouseDown={handleMouseDown}
       disabled={disabled}
       className="w-full md:w-auto px-8 py-3 bg-blue-600 dark:bg-blue-500 text-white font-semibold rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 disabled:bg-gray-400 dark:disabled:bg-gray-600 disabled:cursor-not-allowed transition-colors"
     >

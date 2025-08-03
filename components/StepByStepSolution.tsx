@@ -77,6 +77,7 @@ export default function StepByStepSolution({ steps }: StepByStepSolutionProps) {
               <button
                 onClick={() => toggleStep(step.stepNumber)}
                 className="w-full px-4 py-3 text-left flex items-center justify-between hover:opacity-90 transition-opacity"
+                style={{ minHeight: '60px' }}
               >
                 <div className="flex items-center gap-3">
                   <span className="text-2xl">{techniqueIcon}</span>

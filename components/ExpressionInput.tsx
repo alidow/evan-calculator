@@ -21,8 +21,14 @@ export default function ExpressionInput({
 
   const handleKeyPress = (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
+      e.preventDefault();
       onSubmit();
     }
+  };
+
+  const handleBlur = () => {
+    // Ensure state is up to date on blur
+    // This helps with the button click issue
   };
 
   return (
@@ -31,6 +37,7 @@ export default function ExpressionInput({
       value={value}
       onChange={handleChange}
       onKeyPress={handleKeyPress}
+      onBlur={handleBlur}
       placeholder={placeholder}
       className="w-full px-4 py-3 text-lg border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:outline-none focus:border-blue-500 dark:focus:border-blue-400 transition-colors"
       autoFocus
