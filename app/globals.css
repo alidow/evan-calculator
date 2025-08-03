@@ -5,7 +5,7 @@
   --foreground: #171717;
 }
 
-:root.dark {
+html.dark {
   --background: #0a0a0a;
   --foreground: #ededed;
 }

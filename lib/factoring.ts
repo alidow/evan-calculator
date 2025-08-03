@@ -127,10 +127,18 @@ export function factorWithSteps(expression: string): FactoringResult {
     // Step 2: Analyze the expression pattern
     const expanded = Algebrite.expand(currentExpression).toString();
     
+    // Try to factor the current expression
+    const innerFactored = Algebrite.factor(currentExpression).toString();
+    const hasFactored = innerFactored !== currentExpression && innerFactored.includes('(');
+    
     // Check for quadratic expressions (ax² + bx + c)
-    if (expanded.match(/[+-]?[^+-]*\*?[a-z]\^2/) && expanded.match(/[+-]?[^+-]*\*?[a-z](?!\^)/)) {
-      // This is a quadratic - let's see how it factors
-      const innerFactored = Algebrite.factor(currentExpression).toString();
+    // More robust pattern to catch all quadratics
+    const hasSquareTerm = expanded.match(/[a-z]\s*\^\s*2/);
+    const hasLinearTerm = expanded.match(/[+-]\s*\d*\s*\*?\s*[a-z](?!\s*\^)/);
+    const hasConstantTerm = expanded.match(/[+-]\s*\d+(?!\s*\*)/);
+    
+    if (hasSquareTerm && (hasLinearTerm || hasConstantTerm)) {
+      // This is a quadratic expression
       
       // Check if it's a perfect square
       if (innerFactored.match(/\([^)]+\)\^2/)) {
@@ -143,16 +151,78 @@ export function factorWithSteps(expression: string): FactoringResult {
           technique: 'perfect-square',
           tip: '📦 Perfect square trinomials have the middle term equal to ±2ab!'
         });
-      } else if (innerFactored.includes('(') && innerFactored.includes(')')) {
-        // Regular quadratic factoring
-        steps.push({
-          stepNumber: stepNumber++,
-          description: 'Factor the quadratic expression',
-          expression: innerFactored,
-          explanation: 'Finding two binomials that multiply to give the original expression',
-          technique: 'quadratic',
-          tip: '🎯 For ax² + bx + c, find factors of ac that add up to b!'
-        });
+      } else if (hasFactored) {
+        // Regular quadratic factoring - let's explain the process
+        // Extract coefficients for better explanation
+        const match = expanded.match(/(\d*)\s*\*?\s*([a-z])\s*\^\s*2\s*([+-]\s*\d*\s*\*?\s*[a-z])?\s*([+-]\s*\d+)?/);
+        if (match) {
+          const variable = match[2];
+          // Parse coefficients more carefully
+          // For x^2 + 24*x + 143 format
+          let a = 1, b = 0, c = 0;
+          
+          // Extract a (coefficient of x^2)
+          const aMatch = expanded.match(/^([+-]?\s*\d*)\s*\*?\s*[a-z]\s*\^\s*2/);
+          if (aMatch) {
+            const aStr = aMatch[1].replace(/\s/g, '');
+            a = (!aStr || aStr === '+' || aStr === '') ? 1 : (aStr === '-' ? -1 : parseInt(aStr));
+          }
+          
+          // Extract b (coefficient of x)
+          const bMatch = expanded.match(/([+-]\s*\d+)\s*\*?\s*[a-z](?!\s*\^)/);
+          if (bMatch) {
+            b = parseInt(bMatch[1].replace(/\s/g, ''));
+          }
+          
+          // Extract c (constant term)
+          const cMatch = expanded.match(/([+-]\s*\d+)(?!\s*\*?\s*[a-z])/g);
+          if (cMatch && cMatch.length > 0) {
+            // Get the last match which should be the constant
+            const lastMatch = cMatch[cMatch.length - 1];
+            c = parseInt(lastMatch.replace(/\s/g, ''));
+          }
+          
+          // First step: identify the quadratic
+          steps.push({
+            stepNumber: stepNumber++,
+            description: 'Identify the quadratic coefficients',
+            expression: `${a === 1 ? '' : a}${variable}² ${b >= 0 ? '+' : ''}${b}${variable} ${c >= 0 ? '+' : ''}${c}`,
+            explanation: `We have a = ${a}, b = ${b}, c = ${c}`,
+            technique: 'quadratic',
+            tip: '🔍 First, identify the coefficients in ax² + bx + c format'
+          });
+          
+          // Second step: find the factors
+          const product = a * c;
+          steps.push({
+            stepNumber: stepNumber++,
+            description: 'Find two numbers that multiply and add correctly',
+            expression: `Need: multiply to ${product}, add to ${b}`,
+            explanation: `We need two numbers that multiply to ac = ${a} × ${c} = ${product} and add to b = ${b}`,
+            technique: 'quadratic',
+            tip: '🎯 List factor pairs of ac and check which pair adds to b'
+          });
+          
+          // Third step: show the factored form
+          steps.push({
+            stepNumber: stepNumber++,
+            description: 'Write the factored form',
+            expression: innerFactored,
+            explanation: 'Using the two numbers we found, we can write the expression as a product of binomials',
+            technique: 'quadratic',
+            tip: '✅ Always verify by expanding: multiply the binomials to check your answer!'
+          });
+        } else {
+          // Fallback for complex expressions
+          steps.push({
+            stepNumber: stepNumber++,
+            description: 'Factor the quadratic expression',
+            expression: innerFactored,
+            explanation: 'Finding two binomials that multiply to give the original expression',
+            technique: 'quadratic',
+            tip: '🎯 For ax² + bx + c, find factors of ac that add up to b!'
+          });
+        }
       }
     }
     // Check for difference of squares (a² - b²)
