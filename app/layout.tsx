@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { DarkModeScript } from "./dark-mode-script";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -26,9 +27,9 @@ export const metadata: Metadata = {
     siteName: "Evan Calculator",
     images: [
       {
-        url: "/og-image.png",
-        width: 1200,
-        height: 630,
+        url: "/calculator-icon.svg",
+        width: 512,
+        height: 512,
         alt: "Algebraic Factoring Calculator",
       },
     ],
@@ -39,7 +40,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Free Algebraic Factoring Calculator",
     description: "Factor polynomials and algebraic expressions instantly. Perfect for homework help!",
-    images: ["/og-image.png"],
+    images: ["/calculator-icon.svg"],
   },
   robots: {
     index: true,
@@ -90,8 +91,9 @@ export default function RootLayout({
   };
 
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
+        <DarkModeScript />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}

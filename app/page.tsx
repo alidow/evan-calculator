@@ -8,6 +8,7 @@ import ExamplesList from '@/components/ExamplesList';
 import HistoryList from '@/components/HistoryList';
 import DarkModeToggle from '@/components/DarkModeToggle';
 import EducationalContent from '@/components/EducationalContent';
+import CalculatorLogo from '@/components/CalculatorLogo';
 import { factorExpression, FactoringResult } from '@/lib/factoring';
 import { useDarkMode } from '@/hooks/useDarkMode';
 
@@ -44,7 +45,9 @@ export default function Home() {
       <div className="max-w-4xl mx-auto px-4 py-12">
         <header className="text-center mb-10">
           <div className="flex items-center justify-center mb-4">
-            <span className="text-6xl mr-3">🧮</span>
+            <div className="mr-4">
+              <CalculatorLogo size={56} />
+            </div>
             <h1 className="text-4xl font-bold text-gray-800 dark:text-gray-100">
               Algebraic Factoring Calculator
             </h1>
