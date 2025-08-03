@@ -56,6 +56,51 @@ function isPerfectSquare(expr: string): { isSquare: boolean; root?: string } {
   return { isSquare: false };
 }
 
+// Helper function to find all factor pairs of a number
+function findFactorPairs(n: number): Array<[number, number]> {
+  const pairs: Array<[number, number]> = [];
+  const absN = Math.abs(n);
+  
+  for (let i = 1; i <= Math.sqrt(absN); i++) {
+    if (absN % i === 0) {
+      const factor1 = i;
+      const factor2 = absN / i;
+      
+      // For positive n, add both positive and negative factor pairs
+      if (n > 0) {
+        pairs.push([factor1, factor2]);
+        if (factor1 !== factor2) {
+          pairs.push([factor2, factor1]);
+        }
+        pairs.push([-factor1, -factor2]);
+        if (factor1 !== factor2) {
+          pairs.push([-factor2, -factor1]);
+        }
+      } else {
+        // For negative n, one factor must be negative
+        pairs.push([-factor1, factor2]);
+        pairs.push([factor1, -factor2]);
+        if (factor1 !== factor2) {
+          pairs.push([-factor2, factor1]);
+          pairs.push([factor2, -factor1]);
+        }
+      }
+    }
+  }
+  
+  return pairs;
+}
+
+// Helper function to expand and verify a factored expression
+function verifyFactorization(factored: string, original: string): string {
+  try {
+    const expanded = Algebrite.run(`expand(${factored})`);
+    return expanded.toString();
+  } catch {
+    return '';
+  }
+}
+
 // Helper function to extract GCF
 function extractGCF(expression: string): { gcf: string; remaining: string; hasGCF: boolean } | null {
   try {
@@ -143,14 +188,62 @@ export function factorWithSteps(expression: string): FactoringResult {
       // Check if it's a perfect square
       if (innerFactored.match(/\([^)]+\)\^2/)) {
         const base = innerFactored.match(/\(([^)]+)\)\^2/)![1];
-        steps.push({
-          stepNumber: stepNumber++,
-          description: 'Recognize Perfect Square Trinomial',
-          expression: `(${base})²`,
-          explanation: 'This follows the pattern a² ± 2ab + b² = (a ± b)²',
-          technique: 'perfect-square',
-          tip: '📦 Perfect square trinomials have the middle term equal to ±2ab!'
-        });
+        
+        // Extract parts of the perfect square
+        const baseMatch = base.match(/([a-z])\s*([+-])\s*(\d+)/);
+        if (baseMatch) {
+          const [_, var1, sign, num] = baseMatch;
+          const numValue = parseInt(num);
+          
+          steps.push({
+            stepNumber: stepNumber++,
+            description: 'Check for perfect square pattern',
+            expression: `Is this a² ${sign} 2ab + b²?`,
+            explanation: `Let's check if ${variable}² ${b >= 0 ? '+' : ''}${b}${variable} ${c >= 0 ? '+' : ''}${c} fits the pattern`,
+            technique: 'perfect-square',
+            tip: '🔍 Perfect squares have special structure'
+          });
+          
+          steps.push({
+            stepNumber: stepNumber++,
+            description: 'Verify the pattern',
+            expression: `a = ${var1}, b = ${numValue}`,
+            explanation: `First term: a² = ${var1}² ✓\nMiddle term: 2ab = 2(${var1})(${numValue}) = ${2 * numValue}${var1} ${Math.abs(b) === Math.abs(2 * numValue) ? '✓' : '✗'}\nLast term: b² = ${numValue}² = ${numValue * numValue} ${c === numValue * numValue ? '✓' : '✗'}`,
+            technique: 'perfect-square',
+            tip: '📦 All three parts must match for a perfect square!'
+          });
+          
+          steps.push({
+            stepNumber: stepNumber++,
+            description: 'Write as a perfect square',
+            expression: `(${base})²`,
+            explanation: `Since all parts match, this is (a ${sign} b)²`,
+            technique: 'perfect-square',
+            tip: '🎯 Perfect square trinomials factor into one binomial squared!'
+          });
+          
+          // Verify
+          const verification = verifyFactorization(`(${base})^2`, currentExpression);
+          if (verification) {
+            steps.push({
+              stepNumber: stepNumber++,
+              description: 'Verify by expanding',
+              expression: `(${base})² = ${verification}`,
+              explanation: `(a ${sign} b)² = a² ${sign} 2ab + b²`,
+              technique: 'perfect-square',
+              tip: '✅ Remember this pattern - it\\'s very common!'
+            });
+          }
+        } else {
+          steps.push({
+            stepNumber: stepNumber++,
+            description: 'Recognize Perfect Square Trinomial',
+            expression: `(${base})²`,
+            explanation: 'This follows the pattern a² ± 2ab + b² = (a ± b)²',
+            technique: 'perfect-square',
+            tip: '📦 Perfect square trinomials have the middle term equal to ±2ab!'
+          });
+        }
       } else if (hasFactored) {
         // Regular quadratic factoring - let's explain the process
         // Extract coefficients for better explanation
@@ -185,33 +278,77 @@ export function factorWithSteps(expression: string): FactoringResult {
           // First step: identify the quadratic
           steps.push({
             stepNumber: stepNumber++,
-            description: 'Identify the quadratic coefficients',
+            description: 'Identify the quadratic expression',
             expression: `${a === 1 ? '' : a}${variable}² ${b >= 0 ? '+' : ''}${b}${variable} ${c >= 0 ? '+' : ''}${c}`,
-            explanation: `We have a = ${a}, b = ${b}, c = ${c}`,
+            explanation: `This is a quadratic in standard form with a = ${a}, b = ${b}, c = ${c}`,
             technique: 'quadratic',
-            tip: '🔍 First, identify the coefficients in ax² + bx + c format'
+            tip: '📝 Standard form is ax² + bx + c'
           });
           
-          // Second step: find the factors
+          // Second step: calculate what we need
           const product = a * c;
           steps.push({
             stepNumber: stepNumber++,
-            description: 'Find two numbers that multiply and add correctly',
-            expression: `Need: multiply to ${product}, add to ${b}`,
-            explanation: `We need two numbers that multiply to ac = ${a} × ${c} = ${product} and add to b = ${b}`,
+            description: 'Set up the factoring problem',
+            expression: `Need two numbers that: multiply to ${product} AND add to ${b}`,
+            explanation: `For factoring ax² + bx + c, we need two numbers that multiply to ac = ${a} × ${c} = ${product} and add to b = ${b}`,
             technique: 'quadratic',
-            tip: '🎯 List factor pairs of ac and check which pair adds to b'
+            tip: '🎯 This is the key to factoring quadratics!'
           });
           
-          // Third step: show the factored form
+          // Third step: list and check factor pairs
+          const factorPairs = findFactorPairs(product);
+          const factorPairStrings = factorPairs.map(([f1, f2]) => 
+            `(${f1}, ${f2}): ${f1} × ${f2} = ${product} ✓, ${f1} + ${f2} = ${f1 + f2} ${f1 + f2 === b ? '✓' : '✗'}`
+          );
+          
+          // Find the correct pair
+          const correctPair = factorPairs.find(([f1, f2]) => f1 + f2 === b);
+          
           steps.push({
             stepNumber: stepNumber++,
-            description: 'Write the factored form',
-            expression: innerFactored,
-            explanation: 'Using the two numbers we found, we can write the expression as a product of binomials',
+            description: 'Check factor pairs of ' + product,
+            expression: factorPairStrings.slice(0, 6).join('\\n'), // Show first 6 pairs
+            explanation: correctPair 
+              ? `The pair (${correctPair[0]}, ${correctPair[1]}) works because ${correctPair[0]} + ${correctPair[1]} = ${b}`
+              : 'Finding the right factor pair...',
             technique: 'quadratic',
-            tip: '✅ Always verify by expanding: multiply the binomials to check your answer!'
+            tip: '💡 Start with smaller factors and work your way up'
           });
+          
+          // Fourth step: show the factoring process
+          if (correctPair && a === 1) {
+            steps.push({
+              stepNumber: stepNumber++,
+              description: 'Write the factored form',
+              expression: `(${variable} ${correctPair[0] >= 0 ? '+' : ''}${correctPair[0]})(${variable} ${correctPair[1] >= 0 ? '+' : ''}${correctPair[1]})`,
+              explanation: `Since ${correctPair[0]} and ${correctPair[1]} multiply to ${c} and add to ${b}, we can factor as shown`,
+              technique: 'quadratic',
+              tip: '🎉 Each binomial uses one of the numbers we found!'
+            });
+          } else {
+            steps.push({
+              stepNumber: stepNumber++,
+              description: 'Write the factored form',
+              expression: innerFactored,
+              explanation: 'Using the factor pair we found, we get this factorization',
+              technique: 'quadratic',
+              tip: '📐 For a ≠ 1, the factoring is more complex'
+            });
+          }
+          
+          // Fifth step: verify the answer
+          const verification = verifyFactorization(innerFactored, currentExpression);
+          if (verification) {
+            steps.push({
+              stepNumber: stepNumber++,
+              description: 'Verify by expanding',
+              expression: `${innerFactored} = ${verification}`,
+              explanation: 'Multiply the factors to check that we get back the original expression',
+              technique: 'quadratic',
+              tip: '✅ Always verify your answer by expanding!'
+            });
+          }
         } else {
           // Fallback for complex expressions
           steps.push({
@@ -227,16 +364,55 @@ export function factorWithSteps(expression: string): FactoringResult {
     }
     // Check for difference of squares (a² - b²)
     else if (expanded.match(/^[^+-]*\^2\s*-\s*[^+-]*$/)) {
-      const innerFactored = Algebrite.factor(currentExpression).toString();
-      if (innerFactored.includes('(') && innerFactored.includes(')')) {
+      // Parse the two terms
+      const parts = expanded.split('-').map(p => p.trim());
+      if (parts.length === 2) {
         steps.push({
           stepNumber: stepNumber++,
-          description: 'Apply Difference of Squares pattern',
-          expression: innerFactored,
-          explanation: 'This follows the pattern a² - b² = (a + b)(a - b)',
+          description: 'Recognize the pattern',
+          expression: `${parts[0]} - ${parts[1]}`,
+          explanation: 'This looks like a² - b² (difference of squares)',
           technique: 'difference-of-squares',
-          tip: '📐 Remember: "First squared minus Last squared = (First + Last)(First - Last)"'
+          tip: '🔍 Look for two perfect squares with a minus sign between them'
         });
+        
+        // Check if both are perfect squares
+        const sqrt1 = isPerfectSquare(parts[0]);
+        const sqrt2 = isPerfectSquare(parts[1]);
+        
+        if (sqrt1.isSquare && sqrt2.isSquare) {
+          steps.push({
+            stepNumber: stepNumber++,
+            description: 'Identify the square roots',
+            expression: `√(${parts[0]}) = ${sqrt1.root}, √(${parts[1]}) = ${sqrt2.root}`,
+            explanation: `Since both terms are perfect squares, we can find their square roots`,
+            technique: 'difference-of-squares',
+            tip: '💡 Check: (${sqrt1.root})² = ${parts[0]} ✓ and (${sqrt2.root})² = ${parts[1]} ✓'
+          });
+          
+          steps.push({
+            stepNumber: stepNumber++,
+            description: 'Apply the difference of squares formula',
+            expression: `(${sqrt1.root} + ${sqrt2.root})(${sqrt1.root} - ${sqrt2.root})`,
+            explanation: 'a² - b² = (a + b)(a - b)',
+            technique: 'difference-of-squares',
+            tip: '📐 This formula always works for difference of squares!'
+          });
+          
+          // Verify
+          const factored = `(${sqrt1.root} + ${sqrt2.root}) * (${sqrt1.root} - ${sqrt2.root})`;
+          const verification = verifyFactorization(factored, currentExpression);
+          if (verification) {
+            steps.push({
+              stepNumber: stepNumber++,
+              description: 'Verify by expanding',
+              expression: `(${sqrt1.root} + ${sqrt2.root})(${sqrt1.root} - ${sqrt2.root}) = ${verification}`,
+              explanation: 'Using FOIL: First + Outer + Inner + Last',
+              technique: 'difference-of-squares',
+              tip: '✅ The middle terms cancel out: that\\'s the magic of this pattern!'
+            });
+          }
+        }
       }
     }
     // Check for sum/difference of cubes

@@ -84,7 +84,7 @@ export default function StepByStepSolution({ steps }: StepByStepSolutionProps) {
                     <p className="font-medium text-gray-800 dark:text-gray-100">
                       Step {step.stepNumber}: {step.description}
                     </p>
-                    <p className="font-mono text-lg mt-1 text-gray-700 dark:text-gray-200">
+                    <p className="font-mono text-lg mt-1 text-gray-700 dark:text-gray-200 whitespace-pre-line">
                       {step.expression}
                     </p>
                   </div>
@@ -108,7 +108,7 @@ export default function StepByStepSolution({ steps }: StepByStepSolutionProps) {
               
               {isExpanded && (
                 <div className="px-4 pb-4 border-t border-gray-200 dark:border-gray-700">
-                  <p className="mt-3 text-gray-700 dark:text-gray-300">
+                  <p className="mt-3 text-gray-700 dark:text-gray-300 whitespace-pre-line">
                     {step.explanation}
                   </p>
                   {step.tip && (
