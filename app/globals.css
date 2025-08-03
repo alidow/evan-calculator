@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@config "./tailwind.config.ts";
 
 :root {
   --background: #ffffff;
@@ -16,6 +17,8 @@ html.dark {
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
+
+@variant dark (&:where(.dark, .dark *));
 
 @media (prefers-color-scheme: dark) {
   :root {
