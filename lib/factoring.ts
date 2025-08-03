@@ -125,7 +125,7 @@ export function factorWithSteps(expression: string): FactoringResult {
     }
 
     // Step 2: Analyze the expression pattern
-    const expanded = Algebrite.expand(currentExpression).toString();
+    const expanded = Algebrite.run(`expand(${currentExpression})`).toString();
     
     // Try to factor the current expression
     const innerFactored = Algebrite.factor(currentExpression).toString();
