@@ -10,7 +10,7 @@ import DarkModeToggle from '@/components/DarkModeToggle';
 import EducationalContent from '@/components/EducationalContent';
 import CalculatorLogo from '@/components/CalculatorLogo';
 import { factorExpression, FactoringResult } from '@/lib/factoring';
-import { useDarkMode } from '@/app/dark-mode-provider';
+import { useDarkMode } from '@/hooks/useDarkMode';
 
 export default function Home() {
   const [expression, setExpression] = useState('');
