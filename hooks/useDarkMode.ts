@@ -14,7 +14,9 @@ export function useDarkMode() {
     setIsDark(shouldBeDark);
     
     if (shouldBeDark) {
-      document.documentElement.classList.add('dark');
+      document.documentElement.setAttribute('data-theme', 'dark');
+    } else {
+      document.documentElement.removeAttribute('data-theme');
     }
   }, []);
 
@@ -24,9 +26,9 @@ export function useDarkMode() {
     localStorage.setItem('darkMode', String(newValue));
     
     if (newValue) {
-      document.documentElement.classList.add('dark');
+      document.documentElement.setAttribute('data-theme', 'dark');
     } else {
-      document.documentElement.classList.remove('dark');
+      document.documentElement.removeAttribute('data-theme');
     }
   };
 

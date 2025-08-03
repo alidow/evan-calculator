@@ -199,7 +199,7 @@ export function factorWithSteps(expression: string): FactoringResult {
             stepNumber: stepNumber++,
             description: 'Check for perfect square pattern',
             expression: `Is this a² ${sign} 2ab + b²?`,
-            explanation: `Let's check if ${variable}² ${b >= 0 ? '+' : ''}${b}${variable} ${c >= 0 ? '+' : ''}${c} fits the pattern`,
+            explanation: `Let's check if the expression fits the perfect square pattern`,
             technique: 'perfect-square',
             tip: '🔍 Perfect squares have special structure'
           });
@@ -208,7 +208,7 @@ export function factorWithSteps(expression: string): FactoringResult {
             stepNumber: stepNumber++,
             description: 'Verify the pattern',
             expression: `a = ${var1}, b = ${numValue}`,
-            explanation: `First term: a² = ${var1}² ✓\nMiddle term: 2ab = 2(${var1})(${numValue}) = ${2 * numValue}${var1} ${Math.abs(b) === Math.abs(2 * numValue) ? '✓' : '✗'}\nLast term: b² = ${numValue}² = ${numValue * numValue} ${c === numValue * numValue ? '✓' : '✗'}`,
+            explanation: `First term: a² = ${var1}²\nMiddle term: 2ab = 2(${var1})(${numValue}) = ${2 * numValue}${var1}\nLast term: b² = ${numValue}² = ${numValue * numValue}`,
             technique: 'perfect-square',
             tip: '📦 All three parts must match for a perfect square!'
           });
@@ -231,7 +231,7 @@ export function factorWithSteps(expression: string): FactoringResult {
               expression: `(${base})² = ${verification}`,
               explanation: `(a ${sign} b)² = a² ${sign} 2ab + b²`,
               technique: 'perfect-square',
-              tip: '✅ Remember this pattern - it\\'s very common!'
+              tip: "✅ Remember this pattern - it's very common!"
             });
           }
         } else {
@@ -365,7 +365,7 @@ export function factorWithSteps(expression: string): FactoringResult {
     // Check for difference of squares (a² - b²)
     else if (expanded.match(/^[^+-]*\^2\s*-\s*[^+-]*$/)) {
       // Parse the two terms
-      const parts = expanded.split('-').map(p => p.trim());
+      const parts = expanded.split('-').map((p: string) => p.trim());
       if (parts.length === 2) {
         steps.push({
           stepNumber: stepNumber++,
@@ -409,7 +409,7 @@ export function factorWithSteps(expression: string): FactoringResult {
               expression: `(${sqrt1.root} + ${sqrt2.root})(${sqrt1.root} - ${sqrt2.root}) = ${verification}`,
               explanation: 'Using FOIL: First + Outer + Inner + Last',
               technique: 'difference-of-squares',
-              tip: '✅ The middle terms cancel out: that\\'s the magic of this pattern!'
+              tip: "✅ The middle terms cancel out: that's the magic of this pattern!"
             });
           }
         }

@@ -11,7 +11,7 @@ export function DarkModeScript() {
       
       const isDark = getThemePreference();
       if (isDark) {
-        document.documentElement.classList.add('dark');
+        document.documentElement.setAttribute('data-theme', 'dark');
       }
     })();
   `;
