@@ -22,8 +22,10 @@ export function DarkModeProvider({ children }: { children: React.ReactNode }) {
     setIsDark(shouldBeDark);
     if (shouldBeDark) {
       document.documentElement.classList.add('dark');
+      document.body.classList.add('dark');
     } else {
       document.documentElement.classList.remove('dark');
+      document.body.classList.remove('dark');
     }
   }, []);
 
@@ -34,8 +36,10 @@ export function DarkModeProvider({ children }: { children: React.ReactNode }) {
     
     if (newValue) {
       document.documentElement.classList.add('dark');
+      document.body.classList.add('dark');
     } else {
       document.documentElement.classList.remove('dark');
+      document.body.classList.remove('dark');
     }
   };
 
