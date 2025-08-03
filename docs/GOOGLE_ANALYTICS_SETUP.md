@@ -1,5 +1,7 @@
 # Google Analytics Setup Guide
 
+✅ **Status**: Google Analytics is now active with ID: G-1JZYRC8TM3
+
 ## Step 1: Create a Google Analytics 4 Property
 
 1. Go to [Google Analytics](https://analytics.google.com/)
