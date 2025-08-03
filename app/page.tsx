@@ -7,6 +7,7 @@ import ResultDisplay from '@/components/ResultDisplay';
 import ExamplesList from '@/components/ExamplesList';
 import HistoryList from '@/components/HistoryList';
 import DarkModeToggle from '@/components/DarkModeToggle';
+import EducationalContent from '@/components/EducationalContent';
 import { factorExpression, FactoringResult } from '@/lib/factoring';
 import { useDarkMode } from '@/hooks/useDarkMode';
 
@@ -42,11 +43,17 @@ export default function Home() {
       
       <div className="max-w-4xl mx-auto px-4 py-12">
         <header className="text-center mb-10">
-          <h1 className="text-4xl font-bold text-gray-800 dark:text-gray-100 mb-2">
-            Algebraic Expression Factoring Calculator
-          </h1>
-          <p className="text-lg text-gray-600 dark:text-gray-400">
-            Enter an algebraic expression to factor it into its simplest form
+          <div className="flex items-center justify-center mb-4">
+            <span className="text-6xl mr-3">🧮</span>
+            <h1 className="text-4xl font-bold text-gray-800 dark:text-gray-100">
+              Algebraic Factoring Calculator
+            </h1>
+          </div>
+          <p className="text-lg text-gray-600 dark:text-gray-400 mb-2">
+            Factor any polynomial instantly - Your homework helper! 
+          </p>
+          <p className="text-sm text-gray-500 dark:text-gray-500">
+            Perfect for algebra students, teachers, and math enthusiasts
           </p>
         </header>
 
@@ -75,8 +82,11 @@ export default function Home() {
           />
         </main>
 
-        <footer className="mt-12 text-center text-sm text-gray-500 dark:text-gray-400">
+        <EducationalContent />
+
+        <footer className="mt-12 text-center text-sm text-gray-500 dark:text-gray-400 space-y-2">
           <p>Powered by Algebrite - Computer Algebra System</p>
+          <p>© {new Date().getFullYear()} Celestial Platform, LLC. All rights reserved.</p>
         </footer>
       </div>
     </div>
